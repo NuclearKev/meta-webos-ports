@@ -10,11 +10,11 @@ LIC_FILES_CHKSUM = " \
 DEPENDS = "qtbase qtdeclarative qtwayland luna-sysmgr-common extra-cmake-modules wayland-native qtwayland-native"
 
 SRC_URI = "${WEBOS_PORTS_GIT_REPO_COMPLETE}"
-WEBOS_GIT_PARAM_BRANCH = "herrie/acg"
+WEBOS_GIT_PARAM_BRANCH = "herrie/wam-5.15"
 S = "${WORKDIR}/git"
 
 PV = "0.5.0-4+git${SRCPV}"
-SRCREV = "ddd3b1f4924d4ff5f632bf84a459d7c912d00073"
+SRCREV = "bbb54f61179a8008dbb38eafed82038c7a968a30"
 
 # Otherwise there is conflict between None defined in Xlib.h and
 # qtdeclarative's /usr/include/qt5/QtQuick/qsgtexture.h:59
