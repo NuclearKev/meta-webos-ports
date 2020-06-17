@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 LG Electronics, Inc.
+# Copyright (c) 2018-2020 LG Electronics, Inc.
 
 SUMMARY = "Chromium webruntime for webOS"
 AUTHOR = "Lokesh Kumar Goel <lokeshkumar.goel@lge.com>"
@@ -48,7 +48,7 @@ DEPENDS = "virtual/gettext wayland wayland-native luna-service2 pixman freetype 
 DEPENDS_remove_raspberrypi4 = " xproto"
 DEPENDS_append_raspberrypi4 = " xorgproto"
 
-INC_PR = "r23"
+INC_PR = "r27"
 WEBOS_GIT_PARAM_BRANCH_V8 ?= "master"
 WEBOS_GIT_BRANCH_V8 ?= ";branch=${WEBOS_GIT_PARAM_BRANCH_V8}"
 WEBOS_REPO_NAME_V8 ?= "v8"
@@ -90,7 +90,8 @@ WEBOS_SYSTEM_BUS_FILES_LOCATION = "${S}/files/sysbus"
 WEBOS_SYSTEM_BUS_MANIFEST_TYPE = "PASS"
 
 PACKAGECONFIG ?= "jumbo neva-media"
-PACKAGECONFIG_append_hardware = " gstreamer umediaserver gav"
+#disabled since we don't do umediaserver (and gav) yet it seems
+#PACKAGECONFIG_append_hardware = " gstreamer umediaserver gav"
 PACKAGECONFIG[gstreamer] = "use_gst_media=true enable_webm_video_codecs=false,use_gst_media=false,g-media-pipeline"
 PACKAGECONFIG[umediaserver] = ",,umediaserver"
 # Options to enable debug build. Add this PACKAGECONFIG to webos-local.conf to enable debug build
@@ -162,27 +163,23 @@ GN_ARGS += "\
     use_gnome_keyring=false\
     use_pulseaudio=false\
 "
-# Disable closure_compile
-# Else we need HOSTTOOLS += "java"
-GN_ARGS_append = " closure_compile=false"
-
 
 # TODO: drop this after we migrate to ubuntu 16.04 or above
+# FIXME: Herrie build is still failing on 20.04 without these, so keeping them
 GN_ARGS += "\
     is_host_clang=true\
     fatal_linker_warnings=false\
 "
+
+# Disable closure_compile
+# Else we need HOSTTOOLS += "java"
+GN_ARGS_append = " closure_compile=false"
 
 # Following options help build with icecc
 GN_ARGS += "\
     linux_use_bundled_binutils=false\
     use_debug_fission=false\
 "
-
-# TODO: Check if we need something like below:
-# CHROMIUM_DEBUG_FLAGS = "-g1"
-# GN_ARGS += “extra_cflags=' ${CHROMIUM_DEBUG_FLAGS} ‘\”
-# DEBUG_FLAGS = ""
 
 # Respect ld-is-gold in DISTRO_FEATURES when enabling gold
 # Similar patch applied in meta-browser
@@ -194,13 +191,6 @@ GN_ARGS_append_arm = " target_cpu=\"arm\""
 GN_ARGS_append_qemux86 = " target_cpu=\"x86\""
 GN_ARGS_append_qemux86-64 = " target_cpu=\"x64\""
 GN_ARGS_append_aarch64 = " target_cpu=\"arm64\""
-
-# TODO: Check if we need anything  like these for GN
-# GYP_DEFINES_append_aarch64 = " target_arch=arm64"
-# workaround to fix emulator issue with latest chromium
-# replace with proper fix when available
-# follow: https://bugreports.qt.io/browse/QTBUG-57705
-# GYP_DEFINES_append_qemux86 = " generate_character_data=0"
 
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
 ARM_FLOAT_ABI = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hard', 'softfp', d)}"
@@ -214,9 +204,6 @@ GN_ARGS_append_armv6 += 'use_allocator="none"'
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
 GN_ARGS_append_armv6 += 'arm_use_neon=false'
 
-# TODO: Add GN corresponding if we support dynamic injection loading
-# GYP_DEFINES += "use_dynamic_injection_loading=0"
-
 # Doesn't build for armv[45]*
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_aarch64 = "(.*)"
@@ -228,7 +215,7 @@ COMPATIBLE_MACHINE_x86-64 = "(.*)"
 
 #CHROMIUM_PLUGINS_PATH = "${libdir}"
 CBE_DATA_PATH = "${libdir}/cbe"
-CBE_DATA_LOCALES_PATH = "${CBE_DATA_PATH}/locales"
+CBE_DATA_LOCALES_PATH = "${CBE_DATA_PATH}/neva_locales"
 
 # The text relocations are intentional -- see comments in [GF-52468]
 # TODO: check if we need INSANE_SKIP on ldflags
@@ -367,7 +354,30 @@ install_chromium_manifest() {
 MKSNAPSHOT_PATH = ""
 MKSNAPSHOT_PATH_arm = "clang_x86_v8_arm/"
 MKSNAPSHOT_PATH_aarch64 = "clang_x64_v8_arm64/"
+
+MKSNAPSHOT_PATH_qemux86 = "host/"
+MKSNAPSHOT_PATH_qemux86-64 = "host/"
+
 LTTNG_PROVIDER = "liblttng_provider.so"
+
+GN_ARGS_append_qemux86 = "\
+    is_host_clang=false\
+    v8_snapshot_toolchain=\"//build/toolchain/cros:host\" \
+    host_toolchain=\"//build/toolchain/cros:host\" \
+    use_custom_libcxx=false \
+    use_custom_libcxx_for_host=false \
+    v8_enable_embedded_builtins=false \
+"
+
+#Similar as for qemux86-64, seems to allow build to succeed at least
+GN_ARGS_append_qemux86-64 = "\
+    is_host_clang=false\
+    v8_snapshot_toolchain=\"//build/toolchain/cros:host\" \
+    host_toolchain=\"//build/toolchain/cros:host\" \
+    use_custom_libcxx=false \
+    use_custom_libcxx_for_host=false \
+    v8_enable_embedded_builtins=false \
+"
 
 install_webruntime() {
     install -d ${D}${libdir}
@@ -375,6 +385,7 @@ install_webruntime() {
     install -d ${D}${CBE_DATA_PATH}
     install -d ${D}${CBE_DATA_LOCALES_PATH}
 
+    # Install webos webview files
     if [ "${PREFERRED_VERSION_webruntime}" = "79.%" ]; then
         ${S}/depot_tools/ninja ${PARALLEL_MAKE} -C ${OUT_DIR}/${BUILD_TYPE} webos/install/weboswebruntime
     else
@@ -425,7 +436,7 @@ install_wam_demo() {
          xargs --arg-file=${SRC_DIR}/webos/install/wam_demo/binary.list cp -R --no-dereference --preserve=mode,links -v --target-directory=${D_DIR}
          cd ${SRC_DIR}
          xargs --arg-file=${SRC_DIR}/webos/install/wam_demo/runtime.list cp -R --no-dereference --preserve=mode,links -v --target-directory=${D_DIR}
-    fi
+     fi
 
     install_ls2_roles ${WAM_DEMO_APPLICATION}
 
