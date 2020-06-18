@@ -57,6 +57,7 @@ SRC_URI = "\
     ${WEBOSOSE_GIT_REPO_COMPLETE};name=main \
     ${WEBOSOSE_GIT_REPO}/${WEBOS_REPO_NAME_V8};destsuffix=git/src/v8${WEBOS_GIT_BRANCH_V8};name=v8${WEBOSOSE_GIT_PROTOCOL} \
     file://0001-GCC-fix-includes-for-gcc-10.patch \
+    file://0001-Wayland-fix-for-newer-wayland.patch \
 "
 
 ## we don't include SRCPV in PV, so we have to manually include SRCREVs in do_fetch vardeps
@@ -335,6 +336,9 @@ install_app_shell() {
     # run_appshell: Script file for launching chromium
     chmod -v 755 ${A_DIR}/app_shell
     chmod -v 755 ${A_DIR}/run_app_shell
+    chown root:root ${A_DIR}/app_shell
+    chown root:root ${A_DIR}/run_app_shell
+    chown root:root ${A_DIR}/snapshot_blob.bin
 }
 
 install_app_shell_append() {
@@ -369,7 +373,9 @@ GN_ARGS_append_qemux86 = "\
     v8_enable_embedded_builtins=false \
 "
 
-#Similar as for qemux86-64, seems to allow build to succeed at least
+#Similar as for qemux86, seems to allow build to succeed at least
+# But for x86-64 previous setting fails in torque, so this makes build use
+# gcc on host, and use host toolchain for v8 snapshot and torque
 GN_ARGS_append_qemux86-64 = "\
     is_host_clang=false\
     v8_snapshot_toolchain=\"//build/toolchain/cros:host\" \
@@ -532,6 +538,8 @@ INSANE_SKIP_${MLPREFIX}${BROWSER_APPLICATION} += "libdir ldflags textrel"
 INSANE_SKIP_${MLPREFIX}${APP_SHELL_RUNTIME} += "libdir ldflags textrel"
 INSANE_SKIP_${MLPREFIX}${CHROMEDRIVER_RUNTIME} += "libdir ldflags textrel"
 INSANE_SKIP_${MLPREFIX}${WAM_DEMO_APPLICATION} += "libdir ldflags textrel"
+
+INSANE_SKIP_${PN} += "host-user-contaminated"
 
 FILES_${PN} = " \
     ${libdir}/*.so \
