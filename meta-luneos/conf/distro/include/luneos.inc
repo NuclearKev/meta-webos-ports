@@ -176,13 +176,12 @@ APPEND_append_qemuall = " console=ttyS0"
 # The CONNECTIVITY_CHECK_URI's are used to test whether we can succesfully
 # fetch from the network (and warn you if not). To disable the test set
 # the variable to be empty.
-CONNECTIVITY_CHECK_URIS ?= "http://jenkins.nas-admin.org \
-                            http://build.webos-ports.org"
 
 # TODO can check on all these host machines.
 SANITY_TESTED_DISTROS ?= " \
     ubuntu-18.04 \n \
     ubuntu-19.10 \n \
+    ubuntu-20.04 \n \
 "
 
 require conf/distro/include/yocto-uninative.inc

@@ -10,14 +10,13 @@ PACKAGECONFIG += "proprietary-codecs pepper-plugins printing-and-pdf spellchecke
 inherit webos_ports_fork_repo
 
 SRC_URI = " \
-    ${WEBOS_PORTS_GIT_REPO_COMPLETE} \
-    ${WEBOS_PORTS_GIT_REPO}/qtwebengine-chromium;name=chromium${WEBOS_GIT_BRANCH};destsuffix=git/src/3rdparty \
+    ${WEBOS_PORTS_GIT_REPO}/qtwebengine;name=qtwebengine;branch=herrie/debug; \
+    ${WEBOS_PORTS_GIT_REPO}/qtwebengine-chromium;branch=herrie/debug;name=chromium;destsuffix=git/src/3rdparty \
     file://qtwebengine.conf \
 "
-WEBOS_GIT_PARAM_BRANCH = "webOS-ports/master-next"
-
-# Upgrade from webOS-ports/master-20200126-5.14.0 to latest 5.14 commit webOS-ports/master-next-20200126-5.14
+# webOS-ports/master-20200527
 SRCREV_qtwebengine = "a30c712b4dbb02ba8d72b8e7a3a5ff3aebfec581"
+# webOS-ports/master-20200527
 SRCREV_chromium = "4ca6f1013477753e4abd5d003e81791380917cca"
 
 do_install_append() {
