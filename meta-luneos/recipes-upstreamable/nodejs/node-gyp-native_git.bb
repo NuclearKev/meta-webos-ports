@@ -4,7 +4,7 @@ DESCRIPTION = "Node.js native addon build tool"
 HOMEPAGE = "https://github.com/TooTallNate/node-gyp"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=694e396551033371686c80d3a1a69e88"
-DEPENDS = "nodejs-native node-gyp-packages-native"
+DEPENDS = "nodejs-native"
 
 PV = "8.3.0+git${SRCPV}"
 SRCREV = "fb85fb21c4bcba806cca852f6f076108aaf7ef4d"
