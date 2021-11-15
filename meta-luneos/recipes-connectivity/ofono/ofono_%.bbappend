@@ -24,7 +24,7 @@ SRC_URI = " \
 "
 
 SRC_URI:halium  = " \
-  git://github.com/sailfishos/ofono.git;branch=master \
+  git://github.com/sailfishos/ofono.git;protocol=https;branch=master \
   file://0001-Enable-the-various-modem-plugins-we-support-again.patch;striplevel=2 \
   file://0002-Add-support-for-the-Ericsson-F5521gw-modem.patch;striplevel=2 \
   file://ofono \

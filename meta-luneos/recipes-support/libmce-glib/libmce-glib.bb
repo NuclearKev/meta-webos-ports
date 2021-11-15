@@ -9,7 +9,7 @@ DEPENDS = "glib-2.0 glib-2.0-native libglibutil"
 
 inherit pkgconfig
 
-SRC_URI = "git://github.com/sailfishos/libmce-glib.git;branch=master \
+SRC_URI = "git://github.com/sailfishos/libmce-glib.git;protocol=https;branch=master \
            https://raw.githubusercontent.com/sailfishos/mce-dev/03a4de12e5fabad8c0d846663e1a1a2cbfd88957/include/mce/dbus-names.h;name=dbus-names \
            https://raw.githubusercontent.com/sailfishos/mce-dev/03a4de12e5fabad8c0d846663e1a1a2cbfd88957/include/mce/mode-names.h;name=mode-names"
 S = "${WORKDIR}/git"
